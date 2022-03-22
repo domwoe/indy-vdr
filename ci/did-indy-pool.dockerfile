@@ -6,7 +6,7 @@ ARG uid=1000
 RUN apt-get update -y && apt-get install -y \
 	git \
 	wget \
-	python3.8 \
+	python3.5 \
 	python3-nacl \
 	python3-pip \
 	python3-setuptools \
@@ -23,7 +23,8 @@ RUN add-apt-repository "deb http://us.archive.ubuntu.com/ubuntu xenial main univ
 	apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys CE7709D068DB5E88
 ARG indy_stream=master
 RUN add-apt-repository "deb https://repo.sovrin.org/deb xenial ${indy_stream}" && \
-	add-apt-repository "deb https://repo.sovrin.org/sdk/deb xenial stable"
+	add-apt-repository "deb https://repo.sovrin.org/sdk/deb xenial stable" && \
+	add-apt-repository ppa:deadsnakes/ppa
 
 RUN useradd -ms /bin/bash -u $uid indy
 
@@ -37,6 +38,7 @@ RUN apt-get update -y && apt-get install -y \
 	liblz4-dev \
 	libsnappy-dev \
 	rocksdb=5.8.8 \
+	python3.8
 	libindy \
 	ursa \
 	vim
