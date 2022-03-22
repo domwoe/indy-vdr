@@ -1,57 +1,13 @@
-FROM ubuntu:16.04
+FROM ghcr.io/indicio-tech/indy-node/node-build:ubuntu-2004
 
 ARG uid=1000
 
-# Install environment
-RUN apt-get update -y && apt-get install -y \
-	git \
-	wget \
-	python3.5 \
-	python3-nacl \
-	python3-pip \
-	python3-setuptools \
-	apt-transport-https \
-	ca-certificates \
-	software-properties-common
-
 RUN pip3 install -U \
-	"pip~=9.0" \
-	"setuptools~=50.0" \
+	"python3-indy" \
+	"indy-plenum" \
 	"supervisor~=4.2"
 
-RUN add-apt-repository "deb http://us.archive.ubuntu.com/ubuntu xenial main universe" && \
-	apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys CE7709D068DB5E88
-ARG indy_stream=master
-RUN add-apt-repository "deb https://repo.sovrin.org/deb xenial ${indy_stream}" && \
-	add-apt-repository "deb https://repo.sovrin.org/sdk/deb xenial stable"
-
 RUN useradd -ms /bin/bash -u $uid indy
-
-ARG indy_plenum_ver=1.13.0.dev1032
-ARG indy_node_ver=1.13.0.dev1221
-
-RUN apt-get update -y && apt-get install -y \
-	libsodium18 \
-	libbz2-dev \
-	zlib1g-dev \
-	liblz4-dev \
-	libsnappy-dev \
-	rocksdb=5.8.8 \
-	libindy \
-	ursa \
-	vim
-
-RUN pip3 install \
-	indy-plenum==${indy_plenum_ver}
-
-# Download, build and install indy-node
-RUN git clone --single-branch --branch feature/did-indy-new https://github.com/indicio/indy-node && \
-    pip install -e indy-node
-
-# # Install indy python libraries and other dependencies
-# ADD requirements.txt .
-# RUN pip install --no-cache-dir -r requirements.txt
-
 
 RUN echo "[supervisord]\n\
 logfile = /tmp/supervisord.log\n\
@@ -102,6 +58,10 @@ RUN mkdir -p \
 	/var/log/indy \
 	&& chown -R indy:root /etc/indy /var/lib/indy /var/log/indy
 
+COPY generate_indy_pool_transactions generate_indy_pool_transactions
+
+RUN chmod a+x generate_indy_pool_transactions
+
 USER indy
 
 RUN echo "LEDGER_DIR = '/var/lib/indy'\n\
@@ -116,7 +76,7 @@ NETWORK_NAME = 'sandbox'\n"\
 
 ARG pool_ip=127.0.0.1
 
-RUN generate_indy_pool_transactions --nodes 4 --clients 5 --nodeNum 1 2 3 4 --ips="$pool_ip,$pool_ip,$pool_ip,$pool_ip"
+RUN ./generate_indy_pool_transactions --nodes 4 --clients 5 --nodeNum 1 2 3 4 --ips="$pool_ip,$pool_ip,$pool_ip,$pool_ip"
 
 EXPOSE 9701 9702 9703 9704 9705 9706 9707 9708
 
