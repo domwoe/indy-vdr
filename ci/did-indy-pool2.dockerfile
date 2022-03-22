@@ -129,7 +129,7 @@ RUN mkdir -p \
 	/etc/indy \
 	/var/lib/indy/backup \
 	/var/lib/indy/plugins \
-	/var/log/indy \
+	/var/log/indy
 	# && chown -R indy:root /etc/indy /var/lib/indy /var/log/indy
 
 # USER indy
