@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 
 ARG uid=1000
 
@@ -38,7 +38,7 @@ RUN apt-get update -y && apt-get install -y \
 	liblz4-dev \
 	libsnappy-dev \
 	rocksdb=5.8.8 \
-	python3.8 \
+	python3.9 \
 	libindy \
 	ursa \
 	vim

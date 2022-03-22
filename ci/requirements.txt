@@ -6,4 +6,4 @@ cchardet~=2.1.0
 rlp~=0.5.1
 cython
 python-rocksdb==0.6.9
-git+https://github.com/hyperledger/indy-plenum.git@0bbf5c84fc11290cee4272649eb8288de0fa756d#egg=indy-plenum
+#git+https://github.com/hyperledger/indy-plenum.git@0bbf5c84fc11290cee4272649eb8288de0fa756d#egg=indy-plenum
