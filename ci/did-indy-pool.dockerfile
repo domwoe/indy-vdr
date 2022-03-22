@@ -46,7 +46,7 @@ RUN pip3 install \
 	# indy-node==${indy_node_ver}
 
 # Download, build and install indy-node
-RUN git clone --single-branch --branch feature/did-indy-new https://github.com/indicio/indy-node && \
+RUN git clone --single-branch --branch feature/did-indy-new https://github.com/indicio-tech/indy-node && \
     pip install -e indy-node
 
 # Install indy python libraries and other dependencies
