@@ -163,30 +163,30 @@ jobs:
           name: library-${{ runner.os }}
           path: target/release/${{ matrix.lib }}
 
-  build-golang:
-    name: Build and Test Go wrapper
-    needs: [build-manylinux]
-    runs-on: ubuntu-latest
+  # build-golang:
+  #   name: Build and Test Go wrapper
+  #   needs: [build-manylinux]
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
 
-      - name: "Use Golang 1.16.x+"
-        uses: actions/setup-go@v2
-        with:
-          go-version: "^1.16.0"
+  #     - name: "Use Golang 1.16.x+"
+  #       uses: actions/setup-go@v2
+  #       with:
+  #         go-version: "^1.16.0"
 
-      - name: Fetch library artifacts
-        uses: actions/download-artifact@v2
-        with:
-          name: library-${{ runner.os }}
+  #     - name: Fetch library artifacts
+  #       uses: actions/download-artifact@v2
+  #       with:
+  #         name: library-${{ runner.os }}
 
-      - name: Build and test wrapper
-        run: |
-          sudo cp libindy_vdr.so /usr/lib/
-          cd wrappers/golang
-          go run cmd/demo/demo.go
+  #     - name: Build and test wrapper
+  #       run: |
+  #         sudo cp libindy_vdr.so /usr/lib/
+  #         cd wrappers/golang
+  #         go run cmd/demo/demo.go
 
   # build-nodejs:
   #   name: Build and Test NodeJS wrapper
@@ -232,70 +232,70 @@ jobs:
   #         npm publish
   #       working-directory: wrappers/nodejs
 
-  build-py:
-    name: Build and Test Python Wrapper
-    needs: [build-manylinux, build-release]
+  # build-py:
+  #   name: Build and Test Python Wrapper
+  #   needs: [build-manylinux, build-release]
 
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-11, windows-latest]
-        python-version: [3.6]
-        include:
-          - os: ubuntu-latest
-            plat-name: manylinux2014_x86_64
-          - os: macos-11
-            plat-name: macosx_10_9_universal2 # macosx_10_9_x86_64
-          - os: windows-latest
-            plat-name: win_amd64
+  #   strategy:
+  #     matrix:
+  #       os: [ubuntu-latest, macos-11, windows-latest]
+  #       python-version: [3.6]
+  #       include:
+  #         - os: ubuntu-latest
+  #           plat-name: manylinux2014_x86_64
+  #         - os: macos-11
+  #           plat-name: macosx_10_9_universal2 # macosx_10_9_x86_64
+  #         - os: windows-latest
+  #           plat-name: win_amd64
 
-    runs-on: ${{ matrix.os }}
+  #   runs-on: ${{ matrix.os }}
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
+  #     - name: Set up Python ${{ matrix.python-version }}
+  #       uses: actions/setup-python@v2
+  #       with:
+  #         python-version: ${{ matrix.python-version }}
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install setuptools wheel twine auditwheel
+  #     - name: Install dependencies
+  #       run: |
+  #         python -m pip install --upgrade pip
+  #         pip install setuptools wheel twine auditwheel
 
-      - name: Fetch library artifacts
-        uses: actions/download-artifact@v2
-        with:
-          name: library-${{ runner.os }}
-          path: wrappers/python/indy_vdr/
+  #     - name: Fetch library artifacts
+  #       uses: actions/download-artifact@v2
+  #       with:
+  #         name: library-${{ runner.os }}
+  #         path: wrappers/python/indy_vdr/
 
-      - name: Build and test python package
-        shell: sh
-        run: |
-          python setup.py bdist_wheel --python-tag=py3 --plat-name=${{ matrix.plat-name }}
-          pip install dist/*
-          python -m demo.test
-        working-directory: wrappers/python
+  #     - name: Build and test python package
+  #       shell: sh
+  #       run: |
+  #         python setup.py bdist_wheel --python-tag=py3 --plat-name=${{ matrix.plat-name }}
+  #         pip install dist/*
+  #         python -m demo.test
+  #       working-directory: wrappers/python
 
-      - if: "runner.os == 'Linux'"
-        name: Auditwheel
-        run: auditwheel show wrappers/python/dist/*
+  #     - if: "runner.os == 'Linux'"
+  #       name: Auditwheel
+  #       run: auditwheel show wrappers/python/dist/*
 
-      - name: Upload python package
-        uses: actions/upload-artifact@v2
-        with:
-          name: python-${{ runner.os }}
-          path: wrappers/python/dist/*
+  #     - name: Upload python package
+  #       uses: actions/upload-artifact@v2
+  #       with:
+  #         name: python-${{ runner.os }}
+  #         path: wrappers/python/dist/*
 
-      - if: |
-          (github.event_name == 'release' ||
-            (github.event_name == 'workflow_dispatch' &&
-             github.event.inputs.publish == 'true'))
-        name: Publish python package
-        env:
-          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-        run: |
-          twine upload --skip-existing dist/*
-        working-directory: wrappers/python
+  #     - if: |
+  #         (github.event_name == 'release' ||
+  #           (github.event_name == 'workflow_dispatch' &&
+  #            github.event.inputs.publish == 'true'))
+  #       name: Publish python package
+  #       env:
+  #         TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+  #         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+  #       run: |
+  #         twine upload --skip-existing dist/*
+  #       working-directory: wrappers/python

@@ -130,9 +130,9 @@ RUN mkdir -p \
 	/var/lib/indy/backup \
 	/var/lib/indy/plugins \
 	/var/log/indy \
-	&& chown -R indy:root /etc/indy /var/lib/indy /var/log/indy
+	# && chown -R indy:root /etc/indy /var/lib/indy /var/log/indy
 
-USER indy
+# USER indy
 
 RUN echo "LEDGER_DIR = '/var/lib/indy'\n\
 LOG_DIR = '/var/log/indy'\n\
