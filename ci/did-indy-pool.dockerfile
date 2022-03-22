@@ -6,7 +6,7 @@ ARG uid=1000
 RUN apt-get update -y && apt-get install -y \
 	git \
 	wget \
-	python3.5 \
+	python3.8 \
 	python3-nacl \
 	python3-pip \
 	python3-setuptools \
