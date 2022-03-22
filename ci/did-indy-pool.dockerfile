@@ -1,59 +1,83 @@
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 
 ARG uid=1000
+ARG user=indy
 
-# Install environment
 RUN apt-get update -y && apt-get install -y \
-	git \
-	wget \
-	python3.5 \
-	python3-nacl \
-	python3-pip \
-	python3-setuptools \
-	apt-transport-https \
-	ca-certificates \
-	software-properties-common
+    # common stuff
+    git \
+    wget \
+    gnupg \
+    apt-transport-https \
+    ca-certificates \
+    apt-utils
+
+# ========================================================================================================
+# Update repository signing keys
+# --------------------------------------------------------------------------------------------------------
+# Hyperledger
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 9692C00E657DDE61 && \
+    # Sovrin
+    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CE7709D068DB5E88
+# ========================================================================================================
+
+# Plenum
+#  - https://github.com/hyperledger/indy-plenum/issues/1546
+#  - Needed to pick up rocksdb=5.8.8
+RUN echo "deb  https://hyperledger.jfrog.io/artifactory/indy focal dev"  >> /etc/apt/sources.list && \
+    echo "deb http://security.ubuntu.com/ubuntu bionic-security main"  >> /etc/apt/sources.list && \
+    echo "deb https://repo.sovrin.org/deb bionic master" >> /etc/apt/sources.list && \
+    echo "deb https://repo.sovrin.org/sdk/deb bionic master" >> /etc/apt/sources.list
+
+# Sovrin
+RUN apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CE7709D068DB5E88 
+
+RUN apt-get update -y && apt-get install -y \
+    # Python
+    python3-pip \
+    python3-nacl \
+    # rocksdb python wrapper
+    rocksdb=5.8.8 \
+    libgflags-dev \
+    libsnappy-dev \
+    zlib1g-dev \
+    libbz2-dev \
+    liblz4-dev \
+    libgflags-dev \
+    # zstd is needed for caching in github actions pipeline
+    zstd \
+    # fpm
+    ruby \
+    ruby-dev \
+    rubygems \
+    gcc \
+    make \
+    # Indy Node and Plenum
+    libssl1.0.0 \
+    ursa=0.3.2-1 \
+    # Indy SDK
+    libindy=1.15.0~1625-bionic \
+    # Need to move libursa.so to parent dir
+    && mv /usr/lib/ursa/* /usr/lib && rm -rf /usr/lib/ursa
 
 RUN pip3 install -U \
-	"pip~=9.0" \
-	"setuptools~=50.0" \
-	"supervisor~=4.2"
+    # Required by setup.py
+    setuptools==50.3.2 \
+    # Still pinned. Needs to be update like in plenum
+    'pip<10.0.0' \
+    'pyzmq==18.1.0' \
+	'supervisor~=4.2'
 
-RUN add-apt-repository "deb http://us.archive.ubuntu.com/ubuntu xenial main universe" && \
-	apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys CE7709D068DB5E88
-ARG indy_stream=master
-RUN add-apt-repository "deb https://repo.sovrin.org/deb xenial ${indy_stream}" && \
-	add-apt-repository "deb https://repo.sovrin.org/sdk/deb xenial stable" && \
-	add-apt-repository ppa:deadsnakes/ppa
 
-RUN useradd -ms /bin/bash -u $uid indy
+# install fpm
+RUN gem install --no-document rake fpm
 
-ARG indy_plenum_ver=1.13.0.dev1032
-ARG indy_node_ver=1.13.0.dev1221
-
-RUN apt-get update -y && apt-get install -y \
-	libsodium18 \
-	libbz2-dev \
-	zlib1g-dev \
-	liblz4-dev \
-	libsnappy-dev \
-	rocksdb=5.8.8 \
-	python3.9 \
-	libindy \
-	ursa \
-	vim
-
-RUN pip3 install \
-	indy-plenum==${indy_plenum_ver}
-	# indy-node==${indy_node_ver}
+RUN apt-get -y autoremove \
+    && rm -rf /var/lib/apt/lists/*
 
 # Download, build and install indy-node
 RUN git clone --single-branch --branch feature/did-indy-new https://github.com/indicio-tech/indy-node && \
     pip install -e indy-node
-
-# Install indy python libraries and other dependencies
-ADD requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
 
 
 RUN echo "[supervisord]\n\
@@ -102,10 +126,10 @@ RUN mkdir -p \
 	/etc/indy \
 	/var/lib/indy/backup \
 	/var/lib/indy/plugins \
-	/var/log/indy \
-	&& chown -R indy:root /etc/indy /var/lib/indy /var/log/indy
+	/var/log/indy
+	# && chown -R indy:root /etc/indy /var/lib/indy /var/log/indy
 
-USER indy
+# USER indy
 
 RUN echo "LEDGER_DIR = '/var/lib/indy'\n\
 LOG_DIR = '/var/log/indy'\n\

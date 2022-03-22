@@ -76,12 +76,8 @@ RUN apt-get -y autoremove \
     && rm -rf /var/lib/apt/lists/*
 
 # Download, build and install indy-node
-RUN git clone --single-branch --branch feature/did-indy-new https://github.com/indicio-tech/indy-node && \
+RUN git clone --single-branch --branch ubuntu-20.04-upgrade https://github.com/hyperledger/indy-node && \
     pip install -e indy-node
-
-# Install indy python libraries and other dependencies
-#ADD requirements.txt .
-#RUN pip install --no-cache-dir -r requirements.txt
 
 
 RUN echo "[supervisord]\n\
