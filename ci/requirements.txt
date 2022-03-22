@@ -1,0 +1,9 @@
+aiodns~=2.0.0
+aiohttp~=3.6.0
+aiosqlite~=0.13.0
+base58~=1.0.0
+cchardet~=2.1.0
+rlp~=0.5.1
+cython
+python-rocksdb==0.6.9
+git+https://github.com/hyperledger/indy-plenum.git@0bbf5c84fc11290cee4272649eb8288de0fa756d#egg=indy-plenum
