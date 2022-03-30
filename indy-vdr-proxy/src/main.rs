@@ -151,9 +151,10 @@ async fn init_app_state(
                 })?;
             }
 
-            let path = repo.path().parent().unwrap().to_owned();
+            let path = repo.path().parent().unwrap().to_owned().join("networks");
 
             init_pool_state_from_folder_structure(PathBuf::from(path))?
+        // genesis is local path
         } else {
             init_pool_state_from_folder_structure(PathBuf::from(genesis))?
         };

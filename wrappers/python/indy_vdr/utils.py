@@ -4,7 +4,7 @@ import urllib.request
 
 
 INDY_NETWORKS_GITHUB_RAW_BASE = (
-    "https://raw.githubusercontent.com/IDunion/indy-did-networks/main"
+    "https://raw.githubusercontent.com/IDunion/indy-did-networks/main/networks"
 )
 GENESIS_FILENAME = "pool_transactions_genesis.json"
 
